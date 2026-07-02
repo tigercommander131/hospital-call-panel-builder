@@ -141,6 +141,27 @@
       '<path d="M -2 -6 H 2 V -2 H 6 V 2 H 2 V 6 H -2 V 2 H -6 V -2 H -2 Z"/></g>';
   }
 
+  // rounded polygon path (used for triangle buttons)
+  function roundedPolyPath(pts, rr) {
+    function fmt(n) { return Math.round(n * 100) / 100; }
+    function toward(a, b, dist) {
+      var dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
+      return [a[0] + dx / L * dist, a[1] + dy / L * dist];
+    }
+    var n = pts.length, d = '';
+    for (var i = 0; i < n; i++) {
+      var p = pts[i], prev = pts[(i - 1 + n) % n], next = pts[(i + 1) % n];
+      var pIn = toward(p, prev, rr), pOut = toward(p, next, rr);
+      d += (i === 0 ? 'M ' : ' L ') + fmt(pIn[0]) + ' ' + fmt(pIn[1]);
+      d += ' Q ' + fmt(p[0]) + ' ' + fmt(p[1]) + ' ' + fmt(pOut[0]) + ' ' + fmt(pOut[1]);
+    }
+    return d + ' Z';
+  }
+
+  function triPath(r) {
+    return roundedPolyPath([[0, -r], [0.98 * r, 0.72 * r], [-0.98 * r, 0.72 * r]], r * 0.24);
+  }
+
   function barcodeBars(x, y, w, h) {
     // deterministic pseudo-random bars
     var out = '', bx = x, i = 0;
@@ -212,19 +233,63 @@
 
     if (c.type === 'circle') {
       var r = c.r || 22;
+      var shape = c.shape || 'circle';
+      var iconColor = c.textColor || '#fff';
+      var hasLabel = c.label && c.label.length;
+      var hasIcon = c.icon && c.icon !== 'none';
+      var fx = active ? ' filter="url(#' + idp + 'btnGlow)"' : ' filter="url(#' + idp + 'softShadow)"';
       var g2 = '<g' + attrs + ' transform="translate(' + c.x + ' ' + c.y + ')">';
+
+      if (shape === 'oval') {
+        var rx = r * 1.45, ry = r * 0.92;
+        g2 += '<ellipse rx="' + (rx + 1.6) + '" ry="' + (ry + 1.6) + '" fill="#f2f1ee" opacity="0.92"/>';
+        g2 += '<ellipse rx="' + rx + '" ry="' + ry + '" fill="' + (c.color || '#199a53') + '"' + fx + '/>';
+        if (c.ring) g2 += '<ellipse rx="' + (rx - 1.2) + '" ry="' + (ry - 1.2) + '" fill="none" stroke="' + c.ring + '" stroke-width="1.6"/>';
+        g2 += '<ellipse rx="' + rx + '" ry="' + ry + '" fill="url(#' + idp + 'btnDome)" pointer-events="none"/>';
+        if (active) g2 += '<ellipse rx="' + rx + '" ry="' + ry + '" class="pulseFill" fill="#ffffff" pointer-events="none"/>';
+        if (hasIcon && hasLabel) {
+          // icon sits beside the text on wide ovals, like the real thing
+          if (c.icon === 'person') g2 += personIcon(-rx * 0.56, 0, ry / 13.5, iconColor);
+          if (c.icon === 'cross') g2 += crossIcon(-rx * 0.56, 0, ry / 12, iconColor);
+          var fsO = Math.min(ry * 0.5, (rx * 1.02) / Math.max(3, c.label.length) * 1.5);
+          g2 += '<text x="' + (rx * 0.2) + '" y="' + (fsO * 0.35) + '" font-size="' + fsO + '" font-weight="700" fill="' + iconColor + '" text-anchor="middle" letter-spacing="0.2" pointer-events="none">' + esc(c.label) + '</text>';
+        } else {
+          if (c.icon === 'person') g2 += personIcon(0, 0, ry / 10.5, iconColor);
+          if (c.icon === 'cross') g2 += crossIcon(0, 0, ry / 9, iconColor);
+          if (hasLabel) {
+            var fsO2 = Math.min(ry * 0.62, (rx * 1.62) / Math.max(4, c.label.length) * 1.35);
+            g2 += '<text y="' + (fsO2 * 0.35) + '" font-size="' + fsO2 + '" font-weight="700" fill="' + iconColor + '" text-anchor="middle" letter-spacing="0.3" pointer-events="none">' + esc(c.label) + '</text>';
+          }
+        }
+        return g2 + '</g>';
+      }
+
+      if (shape === 'triangle') {
+        var tp = triPath(r);
+        g2 += '<path d="' + triPath(r + 1.8) + '" fill="#f2f1ee" opacity="0.92"/>';
+        g2 += '<path d="' + tp + '" fill="' + (c.color || '#86c67c') + '"' + fx + '/>';
+        g2 += '<path d="' + tp + '" fill="url(#' + idp + 'btnDome)" pointer-events="none"/>';
+        if (active) g2 += '<path d="' + tp + '" class="pulseFill" fill="#ffffff" pointer-events="none"/>';
+        if (c.icon === 'person') g2 += personIcon(0, hasLabel ? -r * 0.04 : r * 0.1, r / 26, iconColor);
+        if (c.icon === 'cross') g2 += crossIcon(0, hasLabel ? -r * 0.04 : r * 0.1, r / 22, iconColor);
+        if (hasLabel) {
+          var fsT = Math.min(r * 0.27, (r * 1.15) / Math.max(3, c.label.length) * 1.45);
+          g2 += '<text y="' + (hasIcon ? r * 0.58 : r * 0.3) + '" font-size="' + fsT + '" font-weight="700" fill="' + iconColor + '" text-anchor="middle" pointer-events="none">' + esc(c.label) + '</text>';
+        }
+        return g2 + '</g>';
+      }
+
+      /* classic circle */
       g2 += '<circle r="' + (r + 1.6) + '" fill="#f2f1ee" opacity="0.92"/>';           // white bezel ring
-      g2 += '<circle r="' + r + '" fill="' + (c.color || '#199a53') + '"' + (active ? ' filter="url(#' + idp + 'btnGlow)"' : ' filter="url(#' + idp + 'softShadow)"') + '/>';
+      g2 += '<circle r="' + r + '" fill="' + (c.color || '#199a53') + '"' + fx + '/>';
       if (c.ring) g2 += '<circle r="' + (r - 1.2) + '" fill="none" stroke="' + c.ring + '" stroke-width="1.6"/>';
       g2 += '<circle r="' + r + '" fill="url(#' + idp + 'btnDome)" pointer-events="none"/>';
       if (active) g2 += '<circle r="' + r + '" class="pulseFill" fill="#ffffff" pointer-events="none"/>';
-      var iconColor = c.textColor || '#fff';
-      var hasLabel = c.label && c.label.length;
       if (c.icon === 'person') g2 += personIcon(0, hasLabel ? -r * 0.18 : 0, r / 16.5, iconColor);
       if (c.icon === 'cross') g2 += crossIcon(0, hasLabel ? -r * 0.2 : 0, r / 14, iconColor);
       if (hasLabel) {
         var fs = Math.min(r * 0.34, (r * 1.75) / Math.max(4, c.label.length) * 1.26);
-        g2 += '<text y="' + (c.icon && c.icon !== 'none' ? r * 0.58 : r * 0.12) + '" font-size="' + fs + '" font-weight="700" fill="' + iconColor + '" text-anchor="middle" letter-spacing="0.2" pointer-events="none">' + esc(c.label) + '</text>';
+        g2 += '<text y="' + (hasIcon ? r * 0.58 : r * 0.12) + '" font-size="' + fs + '" font-weight="700" fill="' + iconColor + '" text-anchor="middle" letter-spacing="0.2" pointer-events="none">' + esc(c.label) + '</text>';
       }
       return g2 + '</g>';
     }
@@ -334,8 +399,16 @@
     if (opts.editable && opts.selection) {
       var selComp = panel.components.find(function (c) { return c.id === opts.selection; });
       if (selComp && selComp.x != null && ['circle', 'rect', 'led', 'label', 'barcode', 'speaker', 'screw'].indexOf(selComp.type) >= 0) {
-        var hw = selComp.type === 'circle' ? (selComp.r || 22) : (selComp.w || 16) / 2 + 3;
-        var hh = selComp.type === 'circle' ? (selComp.r || 22) : (selComp.h || (selComp.type === 'barcode' ? (selComp.w || 34) * 0.55 : 12)) / 2 + 3;
+        var hw, hh;
+        if (selComp.type === 'circle') {
+          var rSel = selComp.r || 22;
+          var shSel = selComp.shape || 'circle';
+          hw = shSel === 'oval' ? rSel * 1.45 : rSel;
+          hh = shSel === 'oval' ? rSel * 0.92 : rSel;
+        } else {
+          hw = (selComp.w || 16) / 2 + 3;
+          hh = (selComp.h || (selComp.type === 'barcode' ? (selComp.w || 34) * 0.55 : 12)) / 2 + 3;
+        }
         s += '<g pointer-events="none"><rect x="' + (selComp.x - hw - 2) + '" y="' + (selComp.y - hh - 2) + '" width="' + (hw * 2 + 4) + '" height="' + (hh * 2 + 4) + '" fill="none" stroke="#6a8dff" stroke-width="0.9" stroke-dasharray="3 2" rx="2"/></g>';
       }
     }

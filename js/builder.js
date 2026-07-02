@@ -74,7 +74,8 @@
     html += '</div>';
     html += '<div class="pal-section">Shapes & hardware</div><div class="pal-grid">';
     [
-      ['circle', 'Circle button'], ['rect', 'Rect button'], ['wedge', 'Corner wedge'],
+      ['circle', 'Circle button'], ['oval', 'Oval button'], ['triangle', 'Triangle button'],
+      ['rect', 'Rect button'], ['wedge', 'Corner wedge'],
       ['led', 'LED'], ['label', 'Label'], ['barcode', 'Asset label'],
       ['speaker', 'Speaker'], ['screw', 'Screw'], ['auxstrip', 'AUX strip'], ['flap', 'Blank flap']
     ].forEach(function (t) {
@@ -308,7 +309,13 @@
       }
 
       /* geometry */
-      if (comp.type === 'circle') html += field('Size <em>' + (comp.r || 22) + '</em>', slider('cp_r', 8, 44, comp.r || 22));
+      if (comp.type === 'circle') {
+        html += field('Shape', '<select class="field" id="cp_shape">' +
+          opt('circle', 'Circle', comp.shape || 'circle') +
+          opt('oval', 'Oval', comp.shape) +
+          opt('triangle', 'Triangle', comp.shape) + '</select>');
+        html += field('Size <em>' + (comp.r || 22) + '</em>', slider('cp_r', 8, 44, comp.r || 22));
+      }
       if (comp.type === 'rect') {
         html += field('Width <em>' + (comp.w || 32) + '</em>', slider('cp_w', 10, 90, comp.w || 32));
         html += field('Height <em>' + (comp.h || 36) + '</em>', slider('cp_h', 10, 70, comp.h || 36));
@@ -461,6 +468,8 @@
       var c;
       switch (type) {
         case 'circle': c = HCP.data.comp('circle', { x: mid.x, y: mid.y, r: 20, label: 'CALL', color: '#199a53', textColor: '#fff', icon: 'person', behaviour: HCP.data.behaviourCall('CALL', '#199a53', 3, 'snd_nurse') }); break;
+        case 'oval': c = HCP.data.comp('circle', { x: mid.x, y: mid.y, r: 16, shape: 'oval', label: 'CALL', color: '#9bc53d', textColor: '#111', icon: 'person', behaviour: HCP.data.behaviourCall('CALL', '#9bc53d', 3, 'snd_nurse') }); break;
+        case 'triangle': c = HCP.data.comp('circle', { x: mid.x, y: mid.y, r: 20, shape: 'triangle', label: 'CALL', color: '#86c67c', textColor: '#111', icon: 'person', behaviour: HCP.data.behaviourCall('CALL', '#86c67c', 3, 'snd_nurse') }); break;
         case 'rect': c = HCP.data.comp('rect', { x: mid.x, y: mid.y, w: 32, h: 36, label: 'CALL', color: '#ff7f27', textColor: '#fff', icon: 'none', behaviour: HCP.data.behaviourCall('CALL', '#ff7f27', 3, 'snd_nhs') }); break;
         case 'wedge':
           var used = p.components.filter(function (k) { return k.type === 'wedge'; }).map(function (k) { return k.corner; });
@@ -525,6 +534,7 @@
       if (comp.behaviour && comp.behaviour.action === 'call') comp.behaviour.callColor = v;
     });
     bindColorRow('cp_tcolor', function (p, v) { comp.textColor = v; });
+    bindSelect('cp_shape', function (p, v) { comp.shape = v; });
     bindRange('cp_r', function (p, v) { comp.r = v; });
     bindRange('cp_w', function (p, v) { comp.w = v; });
     bindRange('cp_h', function (p, v) { comp.h = v; });

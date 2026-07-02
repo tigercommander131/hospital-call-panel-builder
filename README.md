@@ -10,7 +10,7 @@ Works on laptops, large displays and tablets (press **F** or the ⛶ button for 
 | Tab | What it does |
 |-----|--------------|
 | **Simulate** | The Interactive Panel Player. Pick a room, tap the wall panels exactly where you'd press the real ones. Buttons latch and glow, LEDs flash, synthesised alarms loop until CANCEL. The Nurse Station board shows every active call hospital-wide with live timers, sorted by priority. |
-| **Designer** | Figma-style drag-and-drop panel builder. Component library (Emergency, Nurse, Staff Assist, Orderly, Code Blue, MET…), shapes & hardware (wedges, LEDs, barcodes, AUX strips). Select anything to edit its label, colour, size, behaviour, priority and alarm sound. Flip **Test panel** to try it live. ⌘Z undo, arrow keys nudge, Delete removes. |
+| **Designer** | Figma-style drag-and-drop panel builder. Component library (Emergency, Nurse, Staff Assist, Orderly, Code Blue, MET…), shapes & hardware (circle / oval / triangle buttons, corner wedges, LEDs, barcodes, AUX strips). Select anything to edit its shape, label, colour, size, behaviour, priority and alarm sound. Flip **Test** to try it live. ⌘Z undo, arrow keys nudge, Delete removes. |
 | **Sound Studio** | GarageBand for hospital alarms. Every alarm is a *recipe* of blocks (beep / chime / pulse / sweep / warble / silence) — never a recording. Tune blocks on the timeline, adjust whole-alarm feel in Simple mode, or type a description ("urgent but not an emergency") and hit Generate. |
 | **Hospital** | Wards → rooms → panels. Assign any panel to any room. Load preset hospitals (Northern Beaches, Generic AU, NHS Ward, US Hospital) or export/import your whole hospital as one small `.json` — layouts, behaviours and sound recipes included. |
 
