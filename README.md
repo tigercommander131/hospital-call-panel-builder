@@ -2,8 +2,16 @@
 
 Design, build and operate authentic hospital call systems for healthcare simulation.
 
-**To run:** double-click `index.html` — it's fully offline, no install, no build step.
-Works on laptops, large displays and tablets (press **F** or the ⛶ button for a fullscreen wall).
+**To run locally:**
+
+```
+npm install
+npm run dev        # → http://localhost:5199
+```
+
+Or use the live site (auto-deployed from `main`): https://tigercommander131.github.io/hospital-call-panel-builder/
+
+Press **F** or the Fullscreen button for a full-screen wall — ideal on a tablet mounted where the real panel would be.
 
 ## The four tabs
 
@@ -29,7 +37,10 @@ Your hospital autosaves to the browser (localStorage). Export before loading a p
 
 ## Tech
 
-Plain HTML/CSS/JS — no dependencies. Panels are rendered as SVG with computed
-wedge geometry; alarms are synthesised live with the Web Audio API.
+React 18 + TypeScript + Vite, with Zustand (+ Immer) for state. Panels are
+rendered as composable SVG components with computed wedge geometry; alarms are
+synthesised live with the Web Audio API — no audio files anywhere. Your
+hospital autosaves to localStorage; GitHub Actions builds and deploys `main`
+to GitHub Pages.
 
-Built June 2026 · matches the Merlon-IP panels at Northern Beaches Hospital.
+Built June–July 2026 · matches the Merlon-IP panels at Northern Beaches Hospital.
