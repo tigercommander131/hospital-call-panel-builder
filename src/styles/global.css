@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* Our component CSS lives in the `components` layer so Tailwind
+   utility classes (utilities layer) can still win where applied. */
+@layer components {
+
 /* =========================================================
    Hospital Call Panel Builder — gallery-white UI system
    Elevation by value, not shadow. Colour enters as product.
@@ -1031,4 +1035,6 @@ body.emergency-live #emergencyVignette { opacity: 1; animation: vign 0.9s ease-i
   .builder-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; }
   #mainTabs { overflow-x: auto; }
   .room-row { grid-template-columns: 1fr; }
+}
+
 }

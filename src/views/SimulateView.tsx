@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useStore, activeCallsSorted, findRoom, firstRoomId } from '../state/store'
 import { PanelSVG } from '../components/PanelSVG'
-import { Tilt } from '../components/ui/tilt'
 import { Notch, type NotchItem } from '../components/ui/notch'
 import { clickTick } from '../engine/audio'
 import { Panel } from '../data/types'
@@ -66,7 +65,7 @@ function WallPanel({ roomId, panel, scale }: { roomId: string; panel: Panel; sca
     }
   }
   return (
-    <Tilt maxTilt={3.5} liftZ={8} className="wall-panel">
+    <div className="wall-panel">
       <PanelSVG
         panel={panel}
         scale={scale}
@@ -77,7 +76,7 @@ function WallPanel({ roomId, panel, scale }: { roomId: string; panel: Panel; sca
         flashFast={flashFast}
         onCompPointerDown={(compId) => pressComponent(roomId, panel, compId)}
       />
-    </Tilt>
+    </div>
   )
 }
 

@@ -114,6 +114,10 @@ function Wedge({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
   const wfs = c.size || Math.min(6.2, (26 / Math.max(4, (c.label || '').length)) * 1.55)
   return (
     <g {...hitProps(c, ctx)}>
+      {/* glow lives on a static underlay so the pressed button stays vector-crisp */}
+      {active && (
+        <path d={path} fill={c.color || '#63676c'} filter={`url(#${ctx.idp}btnGlow)`} pointerEvents="none" />
+      )}
       <g className="btn-press">
         <path
           d={path}
@@ -121,7 +125,6 @@ function Wedge({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
           stroke="#f5f5f2"
           strokeWidth="1.1"
           strokeOpacity={isBlank ? 0.55 : 0.95}
-          filter={active ? `url(#${ctx.idp}btnGlow)` : undefined}
         />
         <path d={path} fill={`url(#${ctx.idp}wedgeSheen)`} pointerEvents="none" />
         {active && <path d={path} className="pulseFill" fill="#ffffff" pointerEvents="none" />}
@@ -154,9 +157,11 @@ function CircleButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
     const fsO2 = Math.min(ry * 0.62, ((rx * 1.62) / Math.max(4, (c.label || '').length)) * 1.35)
     return (
       <g {...hitProps(c, ctx)} transform={`translate(${c.x} ${c.y})`}>
-        <g className="btn-press">
+        {/* bezel + shadow/glow stay static; only the crisp button sinks */}
         <ellipse rx={rx + 1.6} ry={ry + 1.6} fill="#f2f1ee" opacity="0.92" />
-        <ellipse rx={rx} ry={ry} fill={c.color || '#199a53'} filter={fx} />
+        <ellipse rx={rx} ry={ry} fill={c.color || '#199a53'} filter={fx} pointerEvents="none" />
+        <g className="btn-press">
+        <ellipse rx={rx} ry={ry} fill={c.color || '#199a53'} />
         {c.ring && <ellipse rx={rx - 1.2} ry={ry - 1.2} fill="none" stroke={c.ring} strokeWidth="1.6" />}
         <ellipse rx={rx} ry={ry} fill={`url(#${ctx.idp}btnDome)`} pointerEvents="none" />
         <ellipse cy={-ry * 0.5} rx={rx * 0.55} ry={ry * 0.26} fill="#ffffff" opacity="0.15" pointerEvents="none" />
@@ -184,9 +189,10 @@ function CircleButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
     const fsT = Math.min(r * 0.27, ((r * 1.15) / Math.max(3, (c.label || '').length)) * 1.45)
     return (
       <g {...hitProps(c, ctx)} transform={`translate(${c.x} ${c.y})`}>
-        <g className="btn-press">
         <path d={triPath(r + 1.8)} fill="#f2f1ee" opacity="0.92" />
-        <path d={tp} fill={c.color || '#86c67c'} filter={fx} />
+        <path d={tp} fill={c.color || '#86c67c'} filter={fx} pointerEvents="none" />
+        <g className="btn-press">
+        <path d={tp} fill={c.color || '#86c67c'} />
         <path d={tp} fill={`url(#${ctx.idp}btnDome)`} pointerEvents="none" />
         {active && <path d={tp} className="pulseFill" fill="#ffffff" pointerEvents="none" />}
         {c.icon === 'person' && <PersonGlyph x={0} y={hasLabel ? -r * 0.04 : r * 0.1} s={r / 26} color={iconColor} />}
@@ -200,9 +206,10 @@ function CircleButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
   const fs = Math.min(r * 0.34, ((r * 1.75) / Math.max(4, (c.label || '').length)) * 1.26)
   return (
     <g {...hitProps(c, ctx)} transform={`translate(${c.x} ${c.y})`}>
-      <g className="btn-press">
       <circle r={r + 1.6} fill="#f2f1ee" opacity="0.92" />
-      <circle r={r} fill={c.color || '#199a53'} filter={fx} />
+      <circle r={r} fill={c.color || '#199a53'} filter={fx} pointerEvents="none" />
+      <g className="btn-press">
+      <circle r={r} fill={c.color || '#199a53'} />
       {c.ring && <circle r={r - 1.2} fill="none" stroke={c.ring} strokeWidth="1.6" />}
       <circle r={r} fill={`url(#${ctx.idp}btnDome)`} pointerEvents="none" />
       <ellipse cy={-r * 0.52} rx={r * 0.55} ry={r * 0.27} fill="#ffffff" opacity="0.15" pointerEvents="none" />
@@ -226,8 +233,9 @@ function RectButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
   const icY = c.label ? -h * 0.14 : 0
   return (
     <g {...hitProps(c, ctx)} transform={`translate(${c.x} ${c.y})`}>
+      <rect x={-w / 2} y={-h / 2} width={w} height={h} rx="3.5" fill={c.color || '#888'} filter={fx} pointerEvents="none" />
       <g className="btn-press">
-      <rect x={-w / 2} y={-h / 2} width={w} height={h} rx="3.5" fill={c.color || '#888'} stroke="#00000030" strokeWidth="0.8" filter={fx} />
+      <rect x={-w / 2} y={-h / 2} width={w} height={h} rx="3.5" fill={c.color || '#888'} stroke="#00000030" strokeWidth="0.8" />
       <rect x={-w / 2} y={-h / 2} width={w} height={h} rx="3.5" fill={`url(#${ctx.idp}btnDome)`} pointerEvents="none" />
       {active && <rect x={-w / 2} y={-h / 2} width={w} height={h} rx="3.5" className="pulseFill" fill="#fff" pointerEvents="none" />}
       {c.icon === 'person' && <PersonGlyph x={0} y={icY} s={Math.min(w, h) / 24} color={c.textColor || '#fff'} />}
