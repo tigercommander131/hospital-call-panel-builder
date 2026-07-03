@@ -1,6 +1,6 @@
 /* Hospital — wards, rooms, panel assignment, library, export/import */
 import { useRef } from 'react'
-import { useStore } from '../state/store'
+import { useStore, migrateHospital } from '../state/store'
 import { PRESETS } from '../data/presets'
 import { uid } from '../data/types'
 import { Pill, LinkBtn, XBtn } from '../components/controls'
@@ -68,14 +68,15 @@ export default function HospitalView() {
           return
         }
         clearAllCalls()
+        const migrated = migrateHospital(data)
         set((s) => {
-          s.hospital = data
+          s.hospital = migrated
           s.roomId = null
           s.panelId = null
           s.soundId = null
           s.saveTick++
         })
-        toast(`${data.name || 'Hospital'} imported`)
+        toast(`${migrated.name || 'Hospital'} imported`)
       } catch (e: any) {
         toast('Could not read that file', e.message)
       }

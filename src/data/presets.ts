@@ -70,7 +70,6 @@ export function makeNursePanelNBH(): Panel {
     face: { color: '#5b5f64', radius: 9, surround: 'none' },
     components: [
       comp('flap', { x: 0, y: 104, h: 28 }),
-      comp('brand', { x: 0, y: 0 }),
       comp('wedge', {
         corner: 'tl', label: 'ASSIST', color: '#f2d500', textColor: '#111', leg: 0.46,
         behaviour: behaviourCall('STAFF ASSIST', '#f2d500', 2, 'snd_assist'),
@@ -103,7 +102,6 @@ export function makeEmergencyPanelNBH(): Panel {
     face: { color: '#5b5f64', radius: 9, surround: 'none' },
     components: [
       comp('flap', { x: 0, y: 104, h: 28 }),
-      comp('brand', { x: 0, y: 0 }),
       comp('wedge', {
         corner: 'br', label: 'CANCEL', color: '#f0efec', textColor: '#111', leg: 0.46,
         behaviour: { action: 'cancel' },
@@ -124,7 +122,6 @@ export function makeCorridorPanelNBH(): Panel {
   const p = makeNursePanelNBH()
   p.name = 'Corridor — Nurse (white surround)'
   p.face.surround = 'white'
-  p.components.push(comp('barcode', { x: 50, y: -9, w: 34, text: 'NBH', code: '023030' }))
   p.components.push(comp('auxstrip', { x: 0, y: 104 }))
   p.components = p.components.filter((c) => c.type !== 'flap')
   return p

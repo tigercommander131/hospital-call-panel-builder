@@ -119,7 +119,7 @@ export default function App() {
             }}
           >
             <Icon name="expand" size={14} />
-            Fullscreen
+            <span className="cta-label">Fullscreen</span>
           </button>
         </div>
       </header>

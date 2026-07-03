@@ -5,12 +5,28 @@ import { presetNBH } from '../data/presets'
 
 const STORAGE_KEY = 'hcpb_hospital_v1'
 
+/* strip legacy branding marks (merlon-IP text, NBH asset stickers) */
+export function migrateHospital(h: Hospital): Hospital {
+  return migrate(h)
+}
+function migrate(h: Hospital): Hospital {
+  for (const pid of Object.keys(h.panels)) {
+    const p = h.panels[pid]
+    p.components = p.components.filter((c) => {
+      if (c.type === 'brand') return false
+      if (c.type === 'barcode' && c.text === 'NBH' && (c.code || '').startsWith('0230')) return false
+      return true
+    })
+  }
+  return h
+}
+
 function loadHospital(): Hospital {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const h = JSON.parse(raw)
-      if (h && h.panels && h.wards && h.soundProfiles) return h
+      if (h && h.panels && h.wards && h.soundProfiles) return migrate(h)
     }
   } catch (e) {
     console.warn('load failed', e)

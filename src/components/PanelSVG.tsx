@@ -452,7 +452,6 @@ export const PanelSVG = memo(function PanelSVG(props: PanelSVGProps) {
         <>
           <rect x={-pad + 1} y={-topPad + 1} width={vbW - 2} height={vbH - 2} rx="10" fill={`url(#${idp}surroundWhite)`} stroke="#c9c5ba" strokeWidth="0.8" filter={`url(#${idp}softShadow)`} />
           <rect x={-pad + 3.4} y={-topPad + 3.4} width={vbW - 6.8} height={vbH - 6.8} rx="8" fill="none" stroke="#ffffff" strokeOpacity="0.8" strokeWidth="1" />
-          <text x={panel.w * 0.13} y={panel.h + pad * 0.55} fontSize="5" fill="#b9b5aa" fontWeight="700" fontStyle="italic">merlon</text>
         </>
       )}
       {surround === 'steel' && (
@@ -467,13 +466,6 @@ export const PanelSVG = memo(function PanelSVG(props: PanelSVGProps) {
       <rect x="0" y="0" width={panel.w} height={panel.h} rx={panel.face.radius || 9} fill={`url(#${idp}faceSheen)`} />
 
       {panel.components.map((c) => {
-        if (c.type === 'brand') {
-          return (
-            <text key={c.id} x={panel.w - 6} y={panel.h - 5.5} fontSize="3.8" fill="#c9c9c6" textAnchor="end" fontWeight="600" letterSpacing="0.2">
-              merlon-IP
-            </text>
-          )
-        }
         const R = RENDERERS[c.type]
         return R ? <R key={c.id} c={c} ctx={ctx} /> : null
       })}
