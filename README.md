@@ -9,7 +9,7 @@ npm install
 npm run dev        # → http://localhost:5199
 ```
 
-Or use the live site (auto-deployed from `main`): https://tigercommander131.github.io/hospital-call-panel-builder/
+Or use the live site (auto-deployed from `main` via Vercel): https://hospital-call-panel-builder.vercel.app
 
 Press **F** or the Fullscreen button for a full-screen wall — ideal on a tablet mounted where the real panel would be.
 
@@ -40,7 +40,7 @@ Your hospital autosaves to the browser (localStorage). Export before loading a p
 React 18 + TypeScript + Vite, with Zustand (+ Immer) for state. Panels are
 rendered as composable SVG components with computed wedge geometry; alarms are
 synthesised live with the Web Audio API — no audio files anywhere. Your
-hospital autosaves to localStorage; GitHub Actions builds and deploys `main`
-to GitHub Pages.
+hospital autosaves to localStorage; Vercel builds and deploys `main`
+automatically.
 
 Built June–July 2026 · matches the Merlon-IP panels at Northern Beaches Hospital.
