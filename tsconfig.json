@@ -11,7 +11,9 @@
     "isolatedModules": true,
     "resolveJsonModule": true,
     "noEmit": true,
-    "allowJs": true
+    "allowJs": true,
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
   },
   "include": ["src", "vite.config.ts"]
 }

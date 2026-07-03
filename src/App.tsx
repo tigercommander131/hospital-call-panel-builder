@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useStore, savedFlash, activeCallsSorted } from './state/store'
 import { ViewName } from './data/types'
 import { Icon } from './components/Icon'
@@ -8,12 +9,17 @@ import DesignerView from './views/DesignerView'
 import SoundStudioView from './views/SoundStudioView'
 import HospitalView from './views/HospitalView'
 
+export const isKiosk = () =>
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('kiosk')
+
 const TABS: { id: ViewName; label: string }[] = [
   { id: 'simulate', label: 'Simulate' },
   { id: 'builder', label: 'Designer' },
   { id: 'sounds', label: 'Sound Studio' },
   { id: 'hospital', label: 'Hospital' },
 ]
+
+const VIEW_SPRING = { type: 'spring' as const, stiffness: 340, damping: 34, mass: 0.9 }
 
 function SavedWhisper() {
   const [on, setOn] = useState(false)
@@ -31,6 +37,7 @@ export default function App() {
   const muted = useStore((s) => s.muted)
   const set = useStore((s) => s.set)
   const calls = useStore((s) => s.calls)
+  const kiosk = isKiosk()
 
   const emergencyLive = activeCallsSorted(calls)[0]?.priority === 1
 
@@ -48,6 +55,18 @@ export default function App() {
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [])
+
+  /* kiosk: chrome-less wall for mounted tablets — ?kiosk in the URL */
+  if (kiosk) {
+    return (
+      <>
+        <div id="emergencyVignette" />
+        <SimulateView kiosk />
+        <ToastHost />
+        <ConfirmModal />
+      </>
+    )
+  }
 
   return (
     <>
@@ -71,6 +90,13 @@ export default function App() {
               onClick={() => setView(t.id)}
             >
               {t.label}
+              {view === t.id && (
+                <motion.span
+                  layoutId="tab-underline"
+                  className="tab-underline"
+                  transition={{ type: 'spring', stiffness: 480, damping: 40 }}
+                />
+              )}
             </button>
           ))}
         </nav>
@@ -99,10 +125,21 @@ export default function App() {
       </header>
 
       <main id="view">
-        {view === 'simulate' && <SimulateView />}
-        {view === 'builder' && <DesignerView />}
-        {view === 'sounds' && <SoundStudioView />}
-        {view === 'hospital' && <HospitalView />}
+        <AnimatePresence mode="wait" initial={false}>
+          <motion.div
+            key={view}
+            style={{ height: '100%' }}
+            initial={{ opacity: 0, y: 12, scale: 0.995 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, transition: { duration: 0.14, ease: 'easeIn' } }}
+            transition={VIEW_SPRING}
+          >
+            {view === 'simulate' && <SimulateView />}
+            {view === 'builder' && <DesignerView />}
+            {view === 'sounds' && <SoundStudioView />}
+            {view === 'hospital' && <HospitalView />}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       <ToastHost />

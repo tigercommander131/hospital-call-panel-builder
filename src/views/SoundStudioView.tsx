@@ -1,5 +1,6 @@
 /* Sound Studio — every alarm is a recipe, never a recording */
 import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useStore } from '../state/store'
 import { SoundBlock, SoundProfile, uid } from '../data/types'
 import { previewStart, previewStop, isPreviewing } from '../engine/audio'
@@ -322,27 +323,34 @@ export default function SoundStudioView() {
         <div className="stage-dark">
           <VizCanvas snd={snd} selBlock={selBlock} />
           <div className="timeline">
-            {snd.blocks.map((b, i) => {
-              const m = kindMeta(b.kind)
-              const wPct = Math.max(9, (blockDurMs(b) / (total + (snd.gap || 0))) * 100)
-              return (
-                <button
-                  key={i}
-                  className={`tblock k-${b.kind}${i === selBlock ? ' on' : ''}`}
-                  style={{ ['--bc' as any]: m.color, width: `${wPct}%` }}
-                  onClick={() => set((s) => { s.selBlock = i })}
-                >
-                  <span className="tb-kind">{m.name}</span>
-                  <span className="tb-info">{b.kind === 'silence' ? `${b.dur || 300}ms` : `${Math.round(b.freq || 800)}Hz`}</span>
-                </button>
-              )
-            })}
+            <AnimatePresence initial={false} mode="popLayout">
+              {snd.blocks.map((b, i) => {
+                const m = kindMeta(b.kind)
+                const wPct = Math.max(9, (blockDurMs(b) / (total + (snd.gap || 0))) * 100)
+                return (
+                  <motion.button
+                    key={i}
+                    layout
+                    initial={{ opacity: 0, scale: 0.85, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.85, transition: { duration: 0.14 } }}
+                    transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+                    className={`tblock k-${b.kind}${i === selBlock ? ' on' : ''}`}
+                    style={{ ['--bc' as any]: m.color, width: `${wPct}%` }}
+                    onClick={() => set((s) => { s.selBlock = i })}
+                  >
+                    <span className="tb-kind">{m.name}</span>
+                    <span className="tb-info">{b.kind === 'silence' ? `${b.dur || 300}ms` : `${Math.round(b.freq || 800)}Hz`}</span>
+                  </motion.button>
+                )
+              })}
+            </AnimatePresence>
             {snd.gap > 0 && (
               <div className="tgap" style={{ width: `${Math.min(30, Math.max(6, (snd.gap / (total + snd.gap)) * 100))}%` }}>
                 gap {snd.gap}ms
               </div>
             )}
-            <div className="trepeat">⟳</div>
+            <div className="trepeat"><Icon name="loop" size={15} /></div>
           </div>
         </div>
 

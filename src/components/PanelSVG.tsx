@@ -27,14 +27,32 @@ interface Ctx extends PanelSVGProps {
   innerR: number
 }
 
-/* ---------- little icons printed on buttons ---------- */
+/* ---------- glyphs printed on buttons ----------
+   Drawn to match real call-point moulding: smooth bezier
+   silhouettes, rounded terminals, no hard corners. */
 function PersonGlyph({ x, y, s, color }: { x: number; y: number; s: number; color: string }) {
   return (
-    <g transform={`translate(${x} ${y}) scale(${s})`} fill={color}>
-      <circle cx="0" cy="-7.6" r="2.55" />
-      <path d="M -1.7 -4.4 L 1.7 -4.4 L 4.1 2.6 L 2.55 2.6 L 2.55 8.2 L 0.75 8.2 L 0.75 3.4 L -0.75 3.4 L -0.75 8.2 L -2.55 8.2 L -2.55 2.6 L -4.1 2.6 Z" />
-      <path d="M -1.9 -4.1 L -3.6 0.9 L -4.7 0.5 L -2.9 -4.3 Z" />
-      <path d="M 1.9 -4.1 L 3.6 0.9 L 4.7 0.5 L 2.9 -4.3 Z" />
+    <g transform={`translate(${x} ${y}) scale(${s})`}>
+      {/* head */}
+      <circle cx="0" cy="-7.3" r="2.5" fill={color} />
+      {/* arms — round-capped, angled out like the moulded figure */}
+      <path d="M -2.3 -3.65 L -4.3 0.75" stroke={color} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      <path d="M 2.3 -3.65 L 4.3 0.75" stroke={color} strokeWidth="1.5" strokeLinecap="round" fill="none" />
+      {/* A-line dress with soft shoulders and rounded hem */}
+      <path
+        d="M 0 -4.75
+           C -1.15 -4.75 -2.02 -4.32 -2.42 -3.3
+           L -4.38 1.72
+           C -4.66 2.42 -4.22 2.98 -3.5 2.98
+           L 3.5 2.98
+           C 4.22 2.98 4.66 2.42 4.38 1.72
+           L 2.42 -3.3
+           C 2.02 -4.32 1.15 -4.75 0 -4.75 Z"
+        fill={color}
+      />
+      {/* legs — rounded stems */}
+      <rect x="-2.1" y="2.6" width="1.62" height="5.8" rx="0.81" fill={color} />
+      <rect x="0.48" y="2.6" width="1.62" height="5.8" rx="0.81" fill={color} />
     </g>
   )
 }
@@ -42,7 +60,8 @@ function PersonGlyph({ x, y, s, color }: { x: number; y: number; s: number; colo
 function CrossGlyph({ x, y, s, color }: { x: number; y: number; s: number; color: string }) {
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`} fill={color}>
-      <path d="M -2 -6 H 2 V -2 H 6 V 2 H 2 V 6 H -2 V 2 H -6 V -2 H -2 Z" />
+      <rect x="-1.85" y="-5.75" width="3.7" height="11.5" rx="1.15" />
+      <rect x="-5.75" y="-1.85" width="11.5" height="3.7" rx="1.15" />
     </g>
   )
 }
@@ -95,25 +114,27 @@ function Wedge({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
   const wfs = c.size || Math.min(6.2, (26 / Math.max(4, (c.label || '').length)) * 1.55)
   return (
     <g {...hitProps(c, ctx)}>
-      <path
-        d={path}
-        fill={c.color || '#63676c'}
-        stroke="#f5f5f2"
-        strokeWidth="1.1"
-        strokeOpacity={isBlank ? 0.55 : 0.95}
-        filter={active ? `url(#${ctx.idp}btnGlow)` : undefined}
-      />
-      <path d={path} fill={`url(#${ctx.idp}wedgeSheen)`} pointerEvents="none" />
-      {active && <path d={path} className="pulseFill" fill="#ffffff" pointerEvents="none" />}
-      {c.label && (
-        <text
-          transform={wedgeTextTransform(c.corner || 'tl', ctx.zone, ctx.cx, ctx.cy)}
-          fontSize={wfs} fontWeight="700" fill={c.textColor || '#111'}
-          textAnchor="middle" dominantBaseline="middle" letterSpacing="0.3" pointerEvents="none"
-        >
-          {c.label}
-        </text>
-      )}
+      <g className="btn-press">
+        <path
+          d={path}
+          fill={c.color || '#63676c'}
+          stroke="#f5f5f2"
+          strokeWidth="1.1"
+          strokeOpacity={isBlank ? 0.55 : 0.95}
+          filter={active ? `url(#${ctx.idp}btnGlow)` : undefined}
+        />
+        <path d={path} fill={`url(#${ctx.idp}wedgeSheen)`} pointerEvents="none" />
+        {active && <path d={path} className="pulseFill" fill="#ffffff" pointerEvents="none" />}
+        {c.label && (
+          <text
+            transform={wedgeTextTransform(c.corner || 'tl', ctx.zone, ctx.cx, ctx.cy)}
+            fontSize={wfs} fontWeight="700" fill={c.textColor || '#111'}
+            textAnchor="middle" dominantBaseline="middle" letterSpacing="0.3" pointerEvents="none"
+          >
+            {c.label}
+          </text>
+        )}
+      </g>
     </g>
   )
 }
@@ -133,10 +154,12 @@ function CircleButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
     const fsO2 = Math.min(ry * 0.62, ((rx * 1.62) / Math.max(4, (c.label || '').length)) * 1.35)
     return (
       <g {...hitProps(c, ctx)} transform={`translate(${c.x} ${c.y})`}>
+        <g className="btn-press">
         <ellipse rx={rx + 1.6} ry={ry + 1.6} fill="#f2f1ee" opacity="0.92" />
         <ellipse rx={rx} ry={ry} fill={c.color || '#199a53'} filter={fx} />
         {c.ring && <ellipse rx={rx - 1.2} ry={ry - 1.2} fill="none" stroke={c.ring} strokeWidth="1.6" />}
         <ellipse rx={rx} ry={ry} fill={`url(#${ctx.idp}btnDome)`} pointerEvents="none" />
+        <ellipse cy={-ry * 0.5} rx={rx * 0.55} ry={ry * 0.26} fill="#ffffff" opacity="0.15" pointerEvents="none" />
         {active && <ellipse rx={rx} ry={ry} className="pulseFill" fill="#ffffff" pointerEvents="none" />}
         {hasIcon && hasLabel ? (
           <>
@@ -151,6 +174,7 @@ function CircleButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
             {hasLabel && <text y={fsO2 * 0.35} fontSize={fsO2} fontWeight="700" fill={iconColor} textAnchor="middle" letterSpacing="0.3" pointerEvents="none">{c.label}</text>}
           </>
         )}
+        </g>
       </g>
     )
   }
@@ -160,6 +184,7 @@ function CircleButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
     const fsT = Math.min(r * 0.27, ((r * 1.15) / Math.max(3, (c.label || '').length)) * 1.45)
     return (
       <g {...hitProps(c, ctx)} transform={`translate(${c.x} ${c.y})`}>
+        <g className="btn-press">
         <path d={triPath(r + 1.8)} fill="#f2f1ee" opacity="0.92" />
         <path d={tp} fill={c.color || '#86c67c'} filter={fx} />
         <path d={tp} fill={`url(#${ctx.idp}btnDome)`} pointerEvents="none" />
@@ -167,6 +192,7 @@ function CircleButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
         {c.icon === 'person' && <PersonGlyph x={0} y={hasLabel ? -r * 0.04 : r * 0.1} s={r / 26} color={iconColor} />}
         {c.icon === 'cross' && <CrossGlyph x={0} y={hasLabel ? -r * 0.04 : r * 0.1} s={r / 22} color={iconColor} />}
         {hasLabel && <text y={hasIcon ? r * 0.58 : r * 0.3} fontSize={fsT} fontWeight="700" fill={iconColor} textAnchor="middle" pointerEvents="none">{c.label}</text>}
+        </g>
       </g>
     )
   }
@@ -174,16 +200,19 @@ function CircleButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
   const fs = Math.min(r * 0.34, ((r * 1.75) / Math.max(4, (c.label || '').length)) * 1.26)
   return (
     <g {...hitProps(c, ctx)} transform={`translate(${c.x} ${c.y})`}>
+      <g className="btn-press">
       <circle r={r + 1.6} fill="#f2f1ee" opacity="0.92" />
       <circle r={r} fill={c.color || '#199a53'} filter={fx} />
       {c.ring && <circle r={r - 1.2} fill="none" stroke={c.ring} strokeWidth="1.6" />}
       <circle r={r} fill={`url(#${ctx.idp}btnDome)`} pointerEvents="none" />
+      <ellipse cy={-r * 0.52} rx={r * 0.55} ry={r * 0.27} fill="#ffffff" opacity="0.15" pointerEvents="none" />
       {active && <circle r={r} className="pulseFill" fill="#ffffff" pointerEvents="none" />}
       {c.icon === 'person' && <PersonGlyph x={0} y={hasLabel ? -r * 0.18 : 0} s={r / 16.5} color={iconColor} />}
       {c.icon === 'cross' && <CrossGlyph x={0} y={hasLabel ? -r * 0.2 : 0} s={r / 14} color={iconColor} />}
       {hasLabel && (
         <text y={hasIcon ? r * 0.58 : r * 0.12} fontSize={fs} fontWeight="700" fill={iconColor} textAnchor="middle" letterSpacing="0.2" pointerEvents="none">{c.label}</text>
       )}
+      </g>
     </g>
   )
 }
@@ -197,6 +226,7 @@ function RectButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
   const icY = c.label ? -h * 0.14 : 0
   return (
     <g {...hitProps(c, ctx)} transform={`translate(${c.x} ${c.y})`}>
+      <g className="btn-press">
       <rect x={-w / 2} y={-h / 2} width={w} height={h} rx="3.5" fill={c.color || '#888'} stroke="#00000030" strokeWidth="0.8" filter={fx} />
       <rect x={-w / 2} y={-h / 2} width={w} height={h} rx="3.5" fill={`url(#${ctx.idp}btnDome)`} pointerEvents="none" />
       {active && <rect x={-w / 2} y={-h / 2} width={w} height={h} rx="3.5" className="pulseFill" fill="#fff" pointerEvents="none" />}
@@ -205,6 +235,7 @@ function RectButton({ c, ctx }: { c: PanelComponent; ctx: Ctx }) {
       {c.label && (
         <text y={hasIcon ? h * 0.32 : 1.8} fontSize={fs2} fontWeight="700" fill={c.textColor || '#fff'} textAnchor="middle" pointerEvents="none">{c.label}</text>
       )}
+      </g>
     </g>
   )
 }

@@ -1,11 +1,15 @@
 /* Simulate — the interactive panel player and multi-panel wall */
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'motion/react'
 import { useStore, activeCallsSorted, findRoom, firstRoomId } from '../state/store'
 import { PanelSVG } from '../components/PanelSVG'
-import { Icon } from '../components/Icon'
+import { Tilt } from '../components/ui/tilt'
+import { Notch, type NotchItem } from '../components/ui/notch'
 import { clickTick } from '../engine/audio'
 import { Panel } from '../data/types'
 import { BARCODE_SEQ } from '../engine/geometry'
+
+const CHIP_SPRING = { type: 'spring' as const, stiffness: 420, damping: 34 }
 
 function useNow(intervalMs = 1000) {
   const [now, setNow] = useState(Date.now())
@@ -62,7 +66,7 @@ function WallPanel({ roomId, panel, scale }: { roomId: string; panel: Panel; sca
     }
   }
   return (
-    <div className="wall-panel">
+    <Tilt maxTilt={3.5} liftZ={8} className="wall-panel">
       <PanelSVG
         panel={panel}
         scale={scale}
@@ -73,7 +77,7 @@ function WallPanel({ roomId, panel, scale }: { roomId: string; panel: Panel; sca
         flashFast={flashFast}
         onCompPointerDown={(compId) => pressComponent(roomId, panel, compId)}
       />
-    </div>
+    </Tilt>
   )
 }
 
@@ -111,27 +115,40 @@ function StationBoard() {
         Nurse Station <span className="live-dot" />
       </div>
       <div className="station-board">
-        {list.length === 0 ? (
-          <div className="station-idle">
-            <span className="ok-dot" /> All quiet — no active calls
-          </div>
-        ) : (
-          list.map((c) => {
-            const loc = findRoom(hospital, c.roomId)
-            return (
-              <button
-                key={c.key}
-                className={`call-chip${c.priority === 1 ? ' p1' : ''}`}
-                style={{ ['--chip' as any]: c.callColor }}
-                onClick={() => set((s) => { s.roomId = c.roomId })}
-              >
-                <span className="chip-label">{c.callLabel}</span>
-                <span className="chip-room">{loc?.room.name ?? '—'}</span>
-                <span className="chip-time">{fmtElapsed(now - c.startedAt)}</span>
-              </button>
-            )
-          })
-        )}
+        <AnimatePresence initial={false} mode="popLayout">
+          {list.length === 0 ? (
+            <motion.div
+              key="__idle"
+              className="station-idle"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.12 } }}
+            >
+              <span className="ok-dot" /> All quiet — no active calls
+            </motion.div>
+          ) : (
+            list.map((c) => {
+              const loc = findRoom(hospital, c.roomId)
+              return (
+                <motion.button
+                  key={c.key}
+                  layout
+                  initial={{ opacity: 0, x: -14, scale: 0.97 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: 10, scale: 0.97, transition: { duration: 0.16 } }}
+                  transition={CHIP_SPRING}
+                  className={`call-chip${c.priority === 1 ? ' p1' : ''}`}
+                  style={{ ['--chip' as any]: c.callColor }}
+                  onClick={() => set((s) => { s.roomId = c.roomId })}
+                >
+                  <span className="chip-label">{c.callLabel}</span>
+                  <span className="chip-room">{loc?.room.name ?? '—'}</span>
+                  <span className="chip-time">{fmtElapsed(now - c.startedAt)}</span>
+                </motion.button>
+              )
+            })
+          )}
+        </AnimatePresence>
       </div>
       <div className="side-actions">
         <button
@@ -148,13 +165,45 @@ function StationBoard() {
   )
 }
 
-export default function SimulateView() {
+function KioskNotch() {
+  const hospital = useStore((s) => s.hospital)
+  const roomId = useStore((s) => s.roomId)
+  const muted = useStore((s) => s.muted)
+  const set = useStore((s) => s.set)
+
+  const roomOptions = hospital.wards.flatMap((w) =>
+    w.rooms.map((r) => ({ id: r.id, label: r.name }))
+  )
+  const items: NotchItem[] = [
+    {
+      id: 'room',
+      label: 'Room',
+      options: roomOptions,
+      value: roomId ?? roomOptions[0]?.id,
+      onChange: (id) => set((s) => { s.roomId = id }),
+    },
+    {
+      id: 'sound',
+      label: 'Sound',
+      options: [
+        { id: 'on', label: 'On' },
+        { id: 'muted', label: 'Muted' },
+      ],
+      value: muted ? 'muted' : 'on',
+      onChange: (id) => set((s) => { s.muted = id === 'muted' }),
+    },
+  ]
+  return <Notch items={items} position="bottom" accentColor="#0071e3" offset={18} />
+}
+
+export default function SimulateView({ kiosk = false }: { kiosk?: boolean }) {
   const hospital = useStore((s) => s.hospital)
   const roomId = useStore((s) => s.roomId)
   const calls = useStore((s) => s.calls)
   const set = useStore((s) => s.set)
   const wallRef = useRef<HTMLDivElement>(null)
   const [wallH, setWallH] = useState(600)
+  const [isFullscreen, setIsFullscreen] = useState(false)
 
   const ctx = findRoom(hospital, roomId) ?? findRoom(hospital, firstRoomId(hospital))
   useEffect(() => {
@@ -169,6 +218,12 @@ export default function SimulateView() {
     return () => ro.disconnect()
   }, [])
 
+  useEffect(() => {
+    const onFs = () => setIsFullscreen(!!document.fullscreenElement)
+    document.addEventListener('fullscreenchange', onFs)
+    return () => document.removeEventListener('fullscreenchange', onFs)
+  }, [])
+
   const panels = (ctx?.room.panelIds ?? []).map((pid) => hospital.panels[pid]).filter(Boolean)
   const maxUnits = panels.length ? Math.max(...panels.map((p) => p.h)) : 138
   const scale = Math.max(2, Math.min((wallH * 0.52) / maxUnits, 4.6))
@@ -181,8 +236,37 @@ export default function SimulateView() {
     else callsByRoom[c.roomId] = { n: 1, color: c.callColor }
   }
 
+  const wall = (
+    <div
+      id="wall"
+      ref={wallRef}
+      className={`wall${kiosk ? ' kiosk' : ''}`}
+      style={{ background: hospital.wall?.color || '#c9dde2' }}
+    >
+      <div className="wall-shade" />
+      <div className={`wall-plate ${plateStyle}`}>
+        {panels.length === 0 && <div className="empty-note">This room has no panels yet — assign some in the Hospital tab.</div>}
+        {panels.map((p, i) => (
+          <div key={`${p.id}_${i}`} style={{ display: 'contents' }}>
+            <WallPanel roomId={ctx!.room.id} panel={p} scale={scale} />
+            {i === 0 && panels.length > 1 && plateStyle === 'steel' && (
+              <AssetSticker prefix={hospital.assetPrefix || 'NBH'} code={`0230${60 + ((ctx!.room.name.length) % 9)}`} />
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="wall-skirting" />
+      {(kiosk || isFullscreen) && <KioskNotch />}
+    </div>
+  )
+
+  if (kiosk) {
+    return <div className="kiosk-shell">{wall}</div>
+  }
+
+  let roomIndex = 0
   return (
-    <div className="sim-layout view-enter">
+    <div className="sim-layout">
       <aside className="sim-side card">
         <div className="side-title">Rooms</div>
         <div className="room-tree">
@@ -191,17 +275,29 @@ export default function SimulateView() {
               <div className="ward-name">{w.name}</div>
               {w.rooms.map((r) => {
                 const badge = callsByRoom[r.id]
+                const delay = 0.02 * roomIndex++
                 return (
-                  <button
+                  <motion.button
                     key={r.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 34, delay }}
                     className={`room-item${ctx?.room.id === r.id ? ' active' : ''}${badge ? ' calling' : ''}`}
                     onClick={() => set((s) => { s.roomId = r.id })}
                   >
                     <span>{r.name}</span>
                     {badge && (
-                      <span className="room-badge" style={{ background: badge.color }}>{badge.n}</span>
+                      <motion.span
+                        className="room-badge"
+                        style={{ background: badge.color }}
+                        initial={{ scale: 0.5, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={CHIP_SPRING}
+                      >
+                        {badge.n}
+                      </motion.span>
                     )}
-                  </button>
+                  </motion.button>
                 )
               })}
             </div>
@@ -221,21 +317,7 @@ export default function SimulateView() {
             <h2 className="wall-title">{ctx?.room.name ?? 'No room selected'}</h2>
           </div>
         </div>
-        <div id="wall" ref={wallRef} className="wall" style={{ background: hospital.wall?.color || '#c9dde2' }}>
-          <div className="wall-shade" />
-          <div className={`wall-plate ${plateStyle}`}>
-            {panels.length === 0 && <div className="empty-note">This room has no panels yet — assign some in the Hospital tab.</div>}
-            {panels.map((p, i) => (
-              <div key={`${p.id}_${i}`} style={{ display: 'contents' }}>
-                <WallPanel roomId={ctx!.room.id} panel={p} scale={scale} />
-                {i === 0 && panels.length > 1 && plateStyle === 'steel' && (
-                  <AssetSticker prefix={hospital.assetPrefix || 'NBH'} code={`0230${60 + ((ctx!.room.name.length) % 9)}`} />
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="wall-skirting" />
-        </div>
+        {wall}
       </section>
     </div>
   )

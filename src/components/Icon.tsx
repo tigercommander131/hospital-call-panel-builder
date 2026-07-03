@@ -67,6 +67,14 @@ const GLYPHS: Record<string, JSX.Element> = {
     </g>
   ),
   check: <g {...STROKE}><path d="M5 12.5l4.5 4.5L19 7.5" /></g>,
+  loop: (
+    <g {...STROKE}>
+      <path d="M17.8 9.2A6.6 6.6 0 0 0 5.9 10.8" />
+      <path d="M5.3 6.8v4.2h4.2" />
+      <path d="M6.2 14.8a6.6 6.6 0 0 0 11.9-1.6" />
+      <path d="M18.7 17.2V13h-4.2" />
+    </g>
+  ),
   person: (
     <g fill="currentColor">
       <circle cx="12" cy="7.2" r="3" />

@@ -4,6 +4,12 @@ import { useStore } from '../state/store'
 import { PRESETS } from '../data/presets'
 import { uid } from '../data/types'
 import { Pill, LinkBtn, XBtn } from '../components/controls'
+import { Icon } from '../components/Icon'
+import { Tilt } from '../components/ui/tilt'
+
+/* export format — versioned so future migrations have something to key on */
+const EXPORT_FORMAT = 'hcpb-hospital'
+const EXPORT_VERSION = 2
 
 export default function HospitalView() {
   const hospital = useStore((s) => s.hospital)
@@ -34,7 +40,13 @@ export default function HospitalView() {
   }
 
   const exportHospital = () => {
-    const blob = new Blob([JSON.stringify(hospital, null, 2)], { type: 'application/json' })
+    const payload = {
+      format: EXPORT_FORMAT,
+      version: EXPORT_VERSION,
+      exportedAt: new Date().toISOString(),
+      hospital,
+    }
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' })
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = `${(hospital.name || 'hospital').replace(/[^\w-]+/g, '-').toLowerCase()}.json`
@@ -48,7 +60,9 @@ export default function HospitalView() {
     const reader = new FileReader()
     reader.onload = () => {
       try {
-        const data = JSON.parse(String(reader.result))
+        const raw = JSON.parse(String(reader.result))
+        // accept both the versioned envelope and legacy bare-hospital files
+        const data = raw?.format === EXPORT_FORMAT ? raw.hospital : raw
         if (!data || typeof data !== 'object' || !data.panels || !data.wards || !data.soundProfiles) {
           toast('That file doesn’t look like a hospital export')
           return
@@ -154,7 +168,7 @@ export default function HospitalView() {
                               }
                             })}
                           >
-                            ×
+                            <Icon name="close" size={10} />
                           </button>
                         </span>
                       )
@@ -197,11 +211,13 @@ export default function HospitalView() {
         <div className="section-head"><h3>Library</h3></div>
         <div className="lib-grid">
           {PRESETS.map((p) => (
-            <div key={p.id} className="preset-card card">
-              <div className="preset-name">{p.name}</div>
-              <div className="preset-desc">{p.desc}</div>
-              <LinkBtn onClick={() => loadPreset(p.id)}>Load</LinkBtn>
-            </div>
+            <Tilt key={p.id} maxTilt={5} liftZ={6}>
+              <div className="preset-card card">
+                <div className="preset-name">{p.name}</div>
+                <div className="preset-desc">{p.desc}</div>
+                <LinkBtn onClick={() => loadPreset(p.id)}>Load</LinkBtn>
+              </div>
+            </Tilt>
           ))}
         </div>
 

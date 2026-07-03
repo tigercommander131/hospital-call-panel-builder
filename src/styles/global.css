@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* =========================================================
    Hospital Call Panel Builder — gallery-white UI system
    Elevation by value, not shadow. Colour enters as product.
@@ -78,16 +80,13 @@ input, select, textarea { font: inherit; color: var(--ink); }
 }
 .tab:hover { color: var(--cobalt); }
 .tab.active { font-weight: 600; }
-.tab::after {
-  content: "";
+.tab-underline {
   position: absolute;
   left: 0; right: 0; bottom: -1px;
   height: 2.5px;
   background: var(--ink);
-  transform: scaleX(0);
-  transition: transform 0.25s var(--ease);
+  border-radius: 2px;
 }
-.tab.active::after { transform: scaleX(1); }
 
 .topbar-right { display: flex; gap: 14px; align-items: center; min-width: 230px; justify-content: flex-end; }
 
@@ -129,11 +128,7 @@ input, select, textarea { font: inherit; color: var(--ink); }
 /* ---------------- chrome ---------------- */
 #view { flex: 1; overflow: hidden; }
 
-.view-enter { animation: viewEnter 0.34s var(--ease); }
-@keyframes viewEnter {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: none; }
-}
+.view-enter { height: 100%; }
 
 .card { background: var(--snow); border-radius: var(--r-card); }
 
@@ -229,6 +224,10 @@ select.field {
   transition: background 0.1s var(--ease), color 0.1s var(--ease), transform 0.1s var(--ease);
 }
 .pill:active:not(:disabled) { transform: scale(0.96); }
+.pill:focus-visible, .tab:focus-visible, .icon-btn:focus-visible, .cta-pill:focus-visible {
+  outline: 2.5px solid rgba(0, 113, 227, 0.55);
+  outline-offset: 2px;
+}
 .pill-frost { background: var(--frost); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); color: var(--ink); }
 .pill-frost:hover:not(:disabled) { background: var(--frost-hover); }
 .pill-dark { background: var(--obsidian); color: #fff; }
@@ -451,11 +450,6 @@ select.field {
   font-weight: 500;
   letter-spacing: -0.03px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
-  animation: toastIn 0.32s var(--ease);
-}
-@keyframes toastIn {
-  from { opacity: 0; transform: translateY(14px) scale(0.96); }
-  to { opacity: 1; transform: none; }
 }
 .toast-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 .toast-detail { color: rgba(255, 255, 255, 0.6); }
@@ -469,19 +463,12 @@ select.field {
   display: grid;
   place-items: center;
   z-index: 400;
-  animation: fadeIn 0.2s var(--ease);
 }
-@keyframes fadeIn { from { opacity: 0; } }
 .modal-card {
   background: var(--snow);
   border-radius: var(--r-card);
   padding: 28px;
   width: min(420px, calc(100vw - 48px));
-  animation: modalIn 0.28s var(--ease);
-}
-@keyframes modalIn {
-  from { opacity: 0; transform: translateY(14px) scale(0.97); }
-  to { opacity: 1; transform: none; }
 }
 .modal-title { font-size: 19px; font-weight: 700; letter-spacing: -0.25px; margin-bottom: 8px; }
 .modal-detail { font-size: 14px; letter-spacing: -0.04px; color: var(--graphite); line-height: 1.45; }
@@ -541,18 +528,17 @@ select.field {
   padding: 0 6px;
 }
 
-/* nurse station — the dark stage */
+/* nurse station — white board, colour enters as the call */
 .station-card {
   margin-top: 24px;
-  background: var(--obsidian);
-  border-radius: var(--r-card);
-  padding: 20px;
+  background: var(--fog);
+  border-radius: 20px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 140px;
 }
-.station-card .side-title { color: rgba(255, 255, 255, 0.55); }
 .live-dot {
   width: 6px; height: 6px;
   border-radius: 50%;
@@ -564,7 +550,7 @@ select.field {
 .station-board { display: flex; flex-direction: column; gap: 8px; flex: 1; }
 .station-idle {
   display: flex; align-items: center; gap: 9px;
-  color: rgba(255, 255, 255, 0.55);
+  color: var(--graphite);
   font-size: 13px;
   padding: 10px 2px;
 }
@@ -578,25 +564,20 @@ select.field {
   text-align: left;
   width: 100%;
   padding: 10px 13px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  background: var(--snow);
   border-left: 4px solid var(--chip);
-  color: #fff;
+  color: var(--ink);
   transition: background 0.1s var(--ease);
-  animation: chipIn 0.3s var(--ease);
 }
-@keyframes chipIn {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: none; }
-}
-.call-chip:hover { background: rgba(255, 255, 255, 0.18); }
-.call-chip.p1 { animation: chipIn 0.3s var(--ease), chipFlash 0.8s steps(2) infinite; }
+.call-chip:hover { background: #fbfbfd; }
+.call-chip.p1 { animation: chipFlash 0.8s steps(2) infinite; }
 @keyframes chipFlash {
-  0% { background: rgba(224, 27, 36, 0.45); }
-  100% { background: rgba(255, 255, 255, 0.10); }
+  0% { background: rgba(224, 27, 36, 0.16); }
+  100% { background: var(--snow); }
 }
 .chip-label { grid-area: label; font-weight: 600; font-size: 12.5px; letter-spacing: 0.2px; }
-.chip-room { grid-area: room; font-size: 11.5px; color: rgba(255, 255, 255, 0.55); }
+.chip-room { grid-area: room; font-size: 11.5px; color: var(--graphite); }
 .chip-time {
   grid-area: time;
   font-variant-numeric: tabular-nums;
@@ -606,8 +587,6 @@ select.field {
 }
 
 .side-actions { margin-top: 16px; }
-.station-card .ghost-btn { background: rgba(255, 255, 255, 0.14); color: #fff; }
-.station-card .ghost-btn:hover { background: rgba(255, 255, 255, 0.26); }
 
 /* --- wall --- */
 .sim-wall-wrap { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
@@ -708,6 +687,18 @@ select.field {
 .panel-svg .hit:hover { filter: brightness(1.07); }
 .panel-svg .editable { cursor: grab; }
 .panel-svg .editable.selected { cursor: grabbing; }
+
+/* physical press — the moulded button sinks into the plate */
+.btn-press {
+  transition: transform 90ms var(--ease);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.panel-svg .hit:active .btn-press { transform: scale(0.955); }
+
+/* kiosk mode — chrome-less wall for mounted tablets (?kiosk) */
+.kiosk-shell { height: 100%; }
+.wall.kiosk { height: 100%; border-radius: 0; }
 
 .pulseFill { animation: pulseFill 1.1s ease-in-out infinite; }
 @keyframes pulseFill {
