@@ -42,6 +42,7 @@ const GLYPHS: Record<string, JSX.Element> = {
     </g>
   ),
   expand: <g {...STROKE}><path d="M9 4.5H5.7A1.2 1.2 0 0 0 4.5 5.7V9M15 4.5h3.3a1.2 1.2 0 0 1 1.2 1.2V9M9 19.5H5.7a1.2 1.2 0 0 1-1.2-1.2V15M15 19.5h3.3a1.2 1.2 0 0 0 1.2-1.2V15" /></g>,
+  collapse: <g {...STROKE}><path d="M4.5 9H7.8A1.2 1.2 0 0 0 9 7.8V4.5M19.5 9h-3.3A1.2 1.2 0 0 1 15 7.8V4.5M4.5 15h3.3A1.2 1.2 0 0 1 9 16.2v3.3M19.5 15h-3.3a1.2 1.2 0 0 0-1.2 1.2v3.3" /></g>,
   download: <g {...STROKE}><path d="M12 4.5v10M8 11l4 4 4-4M5 19.5h14" /></g>,
   upload: <g {...STROKE}><path d="M12 14.5v-10M8 8l4-4 4 4M5 19.5h14" /></g>,
   chevronL: <g {...STROKE}><path d="M14.5 5.5L8 12l6.5 6.5" /></g>,

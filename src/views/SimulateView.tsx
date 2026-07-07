@@ -5,7 +5,8 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useStore, activeCallsSorted, findRoom, firstRoomId } from '../state/store'
 import { PanelSVG } from '../components/PanelSVG'
-import { Notch, type NotchItem } from '../components/ui/notch'
+import { Notch, type NotchItem, type NotchAction } from '../components/ui/notch'
+import { Icon } from '../components/Icon'
 import { clickTick } from '../engine/audio'
 import { Panel } from '../data/types'
 
@@ -156,7 +157,7 @@ function StationBoard() {
   )
 }
 
-function KioskNotch() {
+function KioskNotch({ kiosk, fullscreen }: { kiosk: boolean; fullscreen: boolean }) {
   const hospital = useStore((s) => s.hospital)
   const roomId = useStore((s) => s.roomId)
   const muted = useStore((s) => s.muted)
@@ -184,7 +185,26 @@ function KioskNotch() {
       onChange: (id) => set((s) => { s.muted = id === 'muted' }),
     },
   ]
-  return <Notch items={items} position="bottom" accentColor="#0071e3" offset={14} />
+
+  /* Esc doesn't exist on tablets — offer a way back out */
+  const actions: NotchAction[] = []
+  if (fullscreen) {
+    actions.push({
+      id: 'exit-fs',
+      label: 'Exit',
+      icon: <Icon name="collapse" size={13} />,
+      onClick: () => { document.exitFullscreen?.() },
+    })
+  } else if (kiosk) {
+    actions.push({
+      id: 'exit-kiosk',
+      label: 'Exit',
+      icon: <Icon name="collapse" size={13} />,
+      onClick: () => { window.location.href = window.location.pathname },
+    })
+  }
+
+  return <Notch items={items} actions={actions} position="bottom" accentColor="#0071e3" offset={14} />
 }
 
 export default function SimulateView({ kiosk = false }: { kiosk?: boolean }) {
@@ -305,7 +325,7 @@ export default function SimulateView({ kiosk = false }: { kiosk?: boolean }) {
       )}
 
       <div className="wall-skirting" />
-      {showNotch && <KioskNotch />}
+      {showNotch && <KioskNotch kiosk={kiosk} fullscreen={isFullscreen} />}
     </div>
   )
 

@@ -32,9 +32,22 @@ export type NotchItem = {
   onChange?: (optionId: string, option: NotchOption) => void;
 };
 
+export type NotchAction = {
+  /** Stable identifier for the action. */
+  id: string;
+  /** Button label shown in the bar. */
+  label: React.ReactNode;
+  /** Optional leading icon. */
+  icon?: React.ReactNode;
+  /** Fired on tap. Actions are one-shot buttons, not selection groups. */
+  onClick: () => void;
+};
+
 export interface NotchProps {
   /** The groups shown inside the notch. Pass one or many. */
   items: NotchItem[];
+  /** One-shot buttons rendered after the groups (e.g. Exit fullscreen). */
+  actions?: NotchAction[];
   /** Pin the notch to the top or bottom of the viewport. */
   position?: "top" | "bottom";
   /** Horizontal alignment of the floating notch. */
@@ -95,6 +108,7 @@ function NotchDivider() {
 
 export const Notch = ({
   items,
+  actions = [],
   position = "bottom",
   align = "center",
   onItemChange,
@@ -246,10 +260,28 @@ export const Notch = ({
                 <span className="text-neutral-400">{selected.label}</span>
               ) : null}
             </button>
-            {showDividers && !isLast ? <NotchDivider /> : null}
+            {showDividers && (!isLast || actions.length > 0) ? <NotchDivider /> : null}
           </React.Fragment>
         );
       })}
+      {actions.map((action, index) => (
+        <React.Fragment key={action.id}>
+          <button
+            type="button"
+            onClick={action.onClick}
+            className={cn(
+              "group flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium whitespace-nowrap text-neutral-100 transition-colors hover:bg-white/6 hover:text-white",
+              itemClassName,
+            )}
+          >
+            {action.icon ? (
+              <span className="flex shrink-0 items-center justify-center text-neutral-300">{action.icon}</span>
+            ) : null}
+            <span>{action.label}</span>
+          </button>
+          {showDividers && index < actions.length - 1 ? <NotchDivider /> : null}
+        </React.Fragment>
+      ))}
     </motion.div>
   );
 
